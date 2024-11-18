@@ -1,86 +1,262 @@
-# Developer Evaluation Project
+# Ambev Developer Evaluation
 
-`READ CAREFULLY`
+Este é um sistema completo de avaliação de desenvolvedores, utilizando a arquitetura CQRS e baseado em **DDD (Domain-Driven Design)**, incluindo funcionalidades de Vendas, Carrinho de Compras, Usuários, Clientes, Produtos, e autenticação segura. A aplicação utiliza **.NET 8**, é containerizada com **Docker** e **docker-compose**, e emprega diversas tecnologias avançadas como mensageria, eventos de domínio, Mediator, FluentValidation, e mais.
 
-## Instructions
-**The test below will have up to 7 calendar days to be delivered from the date of receipt of this manual.**
+## **Sumário**
 
-- The code must be versioned in a public Github repository and a link must be sent for evaluation once completed
-- Upload this template to your repository and start working from it
-- Read the instructions carefully and make sure all requirements are being addressed
-- The repository must provide instructions on how to configure, execute and test the project
-- Documentation and overall organization will also be taken into consideration
+- [Recursos Principais](#recursos-principais)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Pré-requisitos](#pré-requisitos)
+- [Configuração do Ambiente](#configuração-do-ambiente)
+- [Como Executar o Projeto](#como-executar-o-projeto)
+- [Como Rodar os Testes](#como-rodar-os-testes)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [API Endpoints](#api-endpoints)
 
-## Use Case
-**You are a developer on the DeveloperStore team. Now we need to implement the API prototypes.**
+---
 
-As we work with `DDD`, to reference entities from other domains, we use the `External Identities` pattern with denormalization of entity descriptions.
+## **Recursos Principais**
 
-Therefore, you will write an API (complete CRUD) that handles sales records. The API needs to be able to inform:
+- **Vendas (Sale):** Gerenciamento completo de vendas, com regras de negócio e eventos.
+- **Carrinho de Compras (Cart):** CRUD para adicionar, atualizar e excluir itens no carrinho antes da venda.
+- **Filiais (Branch) e Produtos (Product):** Cadastro e gerenciamento para suportar operações de vendas.
+- **Usuários (User) e Clientes (Customer):** Registro, autenticação e perfis de usuários.
+- **Mensageria:** Uso do RabbitMQ para comunicação assíncrona com sistemas externos.
+- **Cache e Banco de Dados:** Integração com Redis e PostgreSQL.
+- **Autenticação:** Sistema seguro baseado em JWT.
+- **Domain Events e Mediator:** Uso de eventos para comunicação interna desacoplada.
 
-* Sale number
-* Date when the sale was made
-* Customer
-* Total sale amount
-* Branch where the sale was made
-* Products
-* Quantities
-* Unit prices
-* Discounts
-* Total amount for each item
-* Cancelled/Not Cancelled
+---
 
-It's not mandatory, but it would be a differential to build code for publishing events of:
-* SaleCreated
-* SaleModified
-* SaleCancelled
-* ItemCancelled
+## **Tecnologias Utilizadas**
 
-If you write the code, **it's not required** to actually publish to any Message Broker. You can log a message in the application log or however you find most convenient.
+- **.NET 8**
+- **Docker & Docker Compose**
+- **PostgreSQL** (Banco relacional)
+- **MongoDB** (NoSQL)
+- **Redis** (Cache)
+- **RabbitMQ** (Mensageria)
+- **FluentValidation** (Validações)
+- **AutoMapper** (Mapeamento de Objetos)
+- **MediatR** (Mediador)
+- **XUnit e NSubstitute** (Testes unitários e mocks)
 
-### Business Rules
+---
 
-* Purchases above 4 identical items have a 10% discount
-* Purchases between 10 and 20 identical items have a 20% discount
-* It's not possible to sell above 20 identical items
-* Purchases below 4 items cannot have a discount
+## **Pré-requisitos**
 
-These business rules define quantity-based discounting tiers and limitations:
+Certifique-se de que os seguintes softwares estejam instalados no seu computador:
 
-1. Discount Tiers:
-   - 4+ items: 10% discount
-   - 10-20 items: 20% discount
+1. [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+2. [Docker](https://www.docker.com/)
+3. [Docker Compose](https://docs.docker.com/compose/install/)
+4. Editor de código (ex: [Visual Studio Code](https://code.visualstudio.com/))
 
-2. Restrictions:
-   - Maximum limit: 20 items per product
-   - No discounts allowed for quantities below 4 items
+---
 
-## Overview
-This section provides a high-level overview of the project and the various skills and competencies it aims to assess for developer candidates. 
+## **Configuração do Ambiente**
 
-See [Overview](/.doc/overview.md)
+1. Clone o repositório:
 
-## Tech Stack
-This section lists the key technologies used in the project, including the backend, testing, frontend, and database components. 
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   ```
 
-See [Tech Stack](/.doc/tech-stack.md)
+2. Configure variáveis de ambiente no arquivo `.env`:
 
-## Frameworks
-This section outlines the frameworks and libraries that are leveraged in the project to enhance development productivity and maintainability. 
+```json
+{
+   "ConnectionStrings": {
+    "DefaultConnection": "Host=ambev_developer_evaluation_database;Port=5432;Database=developer_evaluation;Username=developer;Password=ev@luAt10n"
+  }
+}
+```
 
-See [Frameworks](/.doc/frameworks.md)
+3. (Opcional) Use o arquivo `docker-compose.override.yml` para customizações locais do docker-compose.
 
-<!-- 
-## API Structure
-This section includes links to the detailed documentation for the different API resources:
-- [API General](./docs/general-api.md)
-- [Products API](/.doc/products-api.md)
-- [Carts API](/.doc/carts-api.md)
-- [Users API](/.doc/users-api.md)
-- [Auth API](/.doc/auth-api.md)
--->
+---
 
-## Project Structure
-This section describes the overall structure and organization of the project files and directories. 
+## **Como Executar o Projeto**
 
-See [Project Structure](/.doc/project-structure.md)
+1. Suba os serviços no Docker:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+    Ou no Visual Studio (_recomendado_):
+
+    ![alt text](image-1.png)
+
+    - Isso iniciará:
+        - API: `https://localhost:60981`
+        - Banco de dados PostgreSQL: `localhost:5432`
+        - MongoDB: `localhost:27017`
+        - RabbitMQ: `localhost:15672`
+        - Redis: `localhost:6379`
+
+2. Acesse a aplicação:
+   - **Swagger UI:** [Swagger UI](https://localhost:60981/swagger/index.html)
+   - **RabbitMQ Management:** [RabbitMQ Management:](http://localhost:15672)
+
+3. **Observação:** Não é necessário executar o comando `dotnet ef database update` para criar as tabelas no banco. Há um método responsável por automatizar este processo:
+
+```CSharp
+public static class DatabaseConfig
+{
+    /// <summary>
+    ///     Apply Migrations automatically without needing to run update in the CLI
+    /// </summary>
+    /// <param name="app"></param>
+    public static void ApplyMigrations(this WebApplication app)
+    {
+        var services = app.Services.CreateScope().ServiceProvider;
+        var dataContext = services.GetRequiredService<DefaultContext>();
+        dataContext.Database.Migrate();
+    }
+}
+```
+
+---
+
+## **Como Rodar os Testes**
+
+### Testes Unitários
+
+1. Execute:
+
+   ```bash
+   dotnet test Ambev.DeveloperEvaluation.Unit
+   ```
+
+### Testes de Integração
+
+1. Execute:
+
+   ```bash
+   dotnet test Ambev.DeveloperEvaluation.Integration
+   ```
+
+### Testes Funcionais
+
+1. Execute:
+
+   ```bash
+   dotnet test Ambev.DeveloperEvaluation.Functional
+   ```
+
+---
+
+## **Estrutura do Projeto**
+
+A aplicação está estruturada seguindo o padrão do **CQRS** e do **Domain-Driven Design (DDD)**.
+
+- **Adapters**: Conexões com recursos externos (ex: ORMs, Mensageria, Api).
+  - **Drivers**: Interfaces primárias para interação (ex: APIs).
+- **Core**: Contém a lógica central da aplicação.
+  - **Application**: Casos de uso, Handlers e Mediator.
+  - **Domain**: Entidades, Regras de Negócio e Eventos de Domínio.
+- **Crosscutting**: Ferramentas genéricas como IoC e configurações comuns.
+- **Tests**: Projetos para Unit, Integration e Functional Tests.
+
+---
+
+## **API Endpoints**
+
+### **Carrinho de Compras**
+
+#### **GET /carts/get-by-userid/{userId}**
+
+- Descrição: Retorna o carrinho e seus produtos
+- Response:
+
+  ```json
+  {
+    "success": true,
+    "message": "string",
+    "errors": [
+        {
+        "error": "string",
+        "detail": "string"
+        }
+    ],
+    "data": {
+        "id": "guid",
+        "userId": "guid",
+        "date": "datetime",
+        "products": [
+        {
+            "id": "guid",
+            "productId": "guid",
+            "quantity": "integer"
+        }
+        ]
+    }
+  }
+  ```
+
+#### **PUT /carts/create-or-update-item/{userId}**
+
+- Descrição: Adiciona ou atualiza um item no carrinho.
+- body:
+
+  ```json
+  {
+    "productId": "guid",
+    "quantity": "integer",
+  }
+  ```
+
+- Response:
+
+  ```json
+    {
+        "success": true,
+        "message": "string",
+        "errors": [
+            {
+            "error": "string",
+            "detail": "string"
+            }
+        ],
+        "data": {
+            "id": "guid",
+            "userId": "guid",
+            "date": "datetime",
+            "products": [
+            {
+                "id": "guid",
+                "productId": "guid",
+                "quantity": "integer"
+            }
+            ]
+        }
+    }
+    ```
+
+#### **DELETE /carts/remove-item/{userId}/{productId}**
+
+- Descrição: Remove um carrinho específico.
+
+- Response
+
+    ```json
+    {
+        "success": true,
+        "message": "string",
+        "errors": [
+            {
+            "error": "string",
+            "detail": "string"
+            }
+        ]
+    }
+    ```
+
+Consulte o [Swagger UI](https://localhost:60981/swagger/index.html) para mais detalhes e ver os demais endpoints.
+
+---
+
+## **Contribuições**
+
+Contribuições são bem-vindas! Por favor, crie um pull request com suas mudanças.
